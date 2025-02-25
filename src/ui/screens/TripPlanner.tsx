@@ -11,7 +11,7 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
-import { insertTrip, getTrips } from "../database/TripsDB"; // <-- import your DB methods
+import { insertTrip, getTrips } from "../../database/TripsDB"; // <-- import your DB methods
 
 type RootStackParamList = {
   TripPlanner: undefined;

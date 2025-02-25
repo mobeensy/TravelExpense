@@ -45,14 +45,15 @@ export const initDatabase = async () => {
           // ✅ Create Expenses Table
           tx.executeSql(
             `CREATE TABLE IF NOT EXISTS expenses (
-              expenseId INTEGER PRIMARY KEY AUTOINCREMENT,
-              tripId INTEGER NOT NULL,
-              expenseCategory TEXT NOT NULL,
-              expenseLocation TEXT,
-              expenseAmount REAL NOT NULL,
-              expenseDate TEXT NOT NULL,
-              expenseDetails TEXT,
-              FOREIGN KEY (tripId) REFERENCES trips (tripId) ON DELETE CASCADE
+             expenseId INTEGER PRIMARY KEY AUTOINCREMENT,
+             tripId INTEGER NOT NULL,
+             expenseCategory TEXT NOT NULL,
+             expenseLocation TEXT,
+             expenseAmount REAL NOT NULL,
+             expenseDate TEXT NOT NULL,
+             expenseDetails TEXT,
+             expenseCurrency TEXT NOT NULL,
+             FOREIGN KEY (tripId) REFERENCES trips (tripId) ON DELETE CASCADE
             );`
           );
         },
@@ -70,4 +71,40 @@ export const initDatabase = async () => {
     console.error("❌ Database initialization error:", error);
   }
 };
+
+export const deleteDatabase = async () => {
+  const db = await getDatabase();
+  if (!db) {
+    console.error("❌ Failed to open the database");
+    return;
+  }
+  try {
+    await new Promise<void>((resolve, reject) => {
+      db.transaction(
+        (tx) => {
+          // ✅ Create Trips Table
+          tx.executeSql(
+            `DROP TABLE IF EXISTS expenses;`
+          );
+
+          // ✅ Create Expenses Table
+          tx.executeSql(
+            `DROP TABLE IF EXISTS trips;`
+          );
+        },
+        (error) => {
+          console.error("❌ Database transaction error:", error);
+          reject(error);
+        },
+        () => {
+          console.log("✅ Tables deleted successfully");
+          resolve();
+        }
+      );
+    });
+  } catch (error) {
+
+  }
+
+}
 

@@ -6,15 +6,24 @@ interface ExpenseItemProps {
   category: string;
   location: string;
   amount: string;
+  currency: string;
   date: string;
 }
 
-const ExpenseItem: React.FC<ExpenseItemProps> = ({ category, location, amount, date }) => {
+const ExpenseItem: React.FC<ExpenseItemProps> = ({
+  category,
+  location,
+  amount,
+  currency,
+  date,
+}) => {
   return (
     <View style={styles.itemContainer}>
       <View style={styles.mainItemRow}>
         <Text style={styles.itemText}>{date}</Text>
-        <Text style={styles.itemText}>${amount}</Text>
+        <Text style={styles.itemText}>
+          {amount} {currency}
+        </Text>
       </View>
       <View style={styles.subRow}>
         <Text style={styles.categoryText} numberOfLines={1} ellipsizeMode="tail">

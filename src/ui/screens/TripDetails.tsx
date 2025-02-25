@@ -10,18 +10,11 @@ import {
 } from "react-native";
 import DatePicker from "react-native-date-picker";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { insertExpense, getExpensesByTrip } from "../database/ExpensesDB";
+import { insertExpense, getExpensesByTrip } from "../../database/ExpensesDB";
 import ExpenseItem from "../components/ExpensItem/ExpenseItem";
 import TextInputField from "../components/TextInputField/TextInputField";
-
-// Our DB schema uses these fields for expenses:
-interface ExpenseItem {
-  expenseId?: number;
-  expenseCategory: string;
-  expenseLocation: string;
-  expenseAmount: string;
-  expenseDate: string;
-}
+import { Picker } from "@react-native-picker/picker";
+import CurrencyPicker from "../components/CurrencyPicker/CurrencyPicker";
 
 type RootStackParamList = {
   TripDetails: {
@@ -37,15 +30,17 @@ const TripDetails = () => {
   const { tripId, tripName } = route.params;
 
   // Expense Form
-  const [formData, setFormData] = useState<ExpenseItem>({
+  const [formData, setFormData] = useState<Expense>({
     expenseCategory: "",
     expenseLocation: "",
     expenseAmount: "",
-    expenseDate: new Date().toISOString().split("T")[0], // Default to today
+    expenseDate: new Date().toISOString().split("T")[0],
+    expenseCurrency: "USD", // Default
+    expenseDetails: "",
   });
 
   // List of expenses from the DB
-  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isDatePickerOpen, setDatePickerOpen] = useState(false);
 
   // Load existing expenses when screen mounts
@@ -55,18 +50,20 @@ const TripDetails = () => {
 
   const loadExpenses = async () => {
     const dbResults = await getExpensesByTrip(tripId);
-    const expenseList: ExpenseItem[] = dbResults.map((row: any) => ({
+    const expenseList: Expense[] = dbResults.map((row: any) => ({
       expenseId: row.expenseId,
       expenseCategory: row.expenseCategory,
       expenseLocation: row.expenseLocation,
       expenseAmount: String(row.expenseAmount),
       expenseDate: row.expenseDate,
+      expenseCurrency: row.expenseCurrency,
+      expenseDetails: row.expenseDetail,
     }));
     setExpenses(expenseList);
   };
 
   // Update form values
-  const handleChangeText = (key: keyof ExpenseItem, value: string) => {
+  const handleChangeText = (key: keyof Expense, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [key]: value,
@@ -105,7 +102,8 @@ const TripDetails = () => {
         formData.expenseLocation,
         parseFloat(formData.expenseAmount),
         formData.expenseDate,
-        "",
+        formData.expenseDetails,
+        formData.expenseCurrency,
       );
 
       await loadExpenses();
@@ -115,6 +113,8 @@ const TripDetails = () => {
         expenseLocation: "",
         expenseAmount: "",
         expenseDate: new Date().toISOString().split("T")[0],
+        expenseCurrency: "USD",
+        expenseDetails: "",
       });
     }
   };
@@ -129,24 +129,35 @@ const TripDetails = () => {
         value={formData.expenseCategory}
         onChangeText={(text) => handleChangeText("expenseCategory", text)}
       />
+      <View style={styles.locationRow}>
+        <TextInputField
+          style={{ flex: 1 }}
+          placeholder="Location"
+          value={formData.expenseLocation}
+          onChangeText={(text) => handleChangeText("expenseLocation", text)}
+        />
+        <TouchableOpacity
+          style={styles.datePickerContainer}
+          onPress={() => setDatePickerOpen(true)}
+        >
+          <Text style={styles.datePickerText}>{formData.expenseDate}</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TextInputField
-        placeholder="Location"
-        value={formData.expenseLocation}
-        onChangeText={(text) => handleChangeText("expenseLocation", text)}
-      />
+      <View style={styles.row}>
+        <TextInputField
+          placeholder="Amount"
+          keyboardType="numeric"
+          value={formData.expenseAmount}
+          onChangeText={handleAmountChange}
+          style={{ flex: 1 }}
+        />
+        <CurrencyPicker
+          selectedCurrency={formData.expenseCurrency}
+          onSelect={(currency) => setFormData((prev) => ({ ...prev, expenseCurrency: currency }))}
+        />
+      </View>
 
-      <TextInputField
-        placeholder="Amount"
-        keyboardType="numeric"
-        value={formData.expenseAmount}
-        onChangeText={handleAmountChange}
-      />
-
-      {/* Date Picker */}
-      <TouchableOpacity style={styles.datePickerContainer} onPress={() => setDatePickerOpen(true)}>
-        <Text style={styles.datePickerText}>Expense Date: {formData.expenseDate}</Text>
-      </TouchableOpacity>
       <DatePicker
         modal
         open={isDatePickerOpen}
@@ -161,20 +172,27 @@ const TripDetails = () => {
         }}
         onCancel={() => setDatePickerOpen(false)}
       />
+      <TextInputField
+        placeholder="Details"
+        value={formData.expenseDetails}
+        onChangeText={(text) => handleChangeText("expenseDetails", text)}
+      />
 
       {/* Submit Button */}
-      <Button title="Submit Expense" onPress={handleSubmit} />
+      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <Text style={styles.submitButtonText}>Submit Expense</Text>
+      </TouchableOpacity>
 
       {/* List of Expenses */}
       <FlatList
         data={expenses}
         keyExtractor={(item) => item.expenseId?.toString() ?? Math.random().toString()}
-        style={{ marginTop: 20 }}
         renderItem={({ item }) => (
           <ExpenseItem
             category={item.expenseCategory}
             location={item.expenseLocation}
             amount={item.expenseAmount}
+            currency={item.expenseCurrency}
             date={item.expenseDate}
           />
         )}
@@ -187,14 +205,16 @@ export default TripDetails;
 
 const styles = StyleSheet.create({
   container: {
+    gap: 4,
     flex: 1,
     backgroundColor: "#fff",
-    padding: 16,
+    // padding: 16,
+    paddingHorizontal: 16,
   },
   title: {
+    margin: 8,
     fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 16,
     textAlign: "center",
   },
   input: {
@@ -211,7 +231,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: "#f8f8f8",
     alignItems: "center",
-    marginBottom: 10,
   },
   datePickerText: {
     fontSize: 16,
@@ -225,5 +244,29 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
+  },
+  row: {
+    gap: 4,
+    flexDirection: "row",
+    backgroundColor: "#f8f8f8",
+    alignItems: "center",
+    justifyContent: "flex-start",
+  },
+  locationRow: {
+    gap: 4,
+    flexDirection: "row",
+  },
+  submitButton: {
+    backgroundColor: "#007BFF", // Primary blue color
+    paddingVertical: 12,
+    borderRadius: 25, // ✅ Makes it a pill shape
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 8,
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
