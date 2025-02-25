@@ -93,3 +93,59 @@ export const deleteTrip = async (tripId: number) => {
     console.error("❌ Delete trip error:", error);
   }
 };
+
+export const getTripsByIds = async (tripIds: number[]): Promise<any[]> => {
+  const db = await getDatabase();
+  if (!db || tripIds.length === 0) return [];
+
+  const placeholders = tripIds.map(() => "?").join(", "); // Creates (?, ?, ?) for SQL IN clause
+
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          `SELECT * FROM trips WHERE tripId IN (${placeholders});`,
+          tripIds,
+          (_, results) => {
+            let trips = [];
+            for (let i = 0; i < results.rows.length; i++) {
+              trips.push(results.rows.item(i));
+            }
+            resolve(trips);
+          }
+        );
+      },
+      (error) => {
+        console.error("❌ Get trips by tripIds error:", error);
+        reject([]);
+      }
+    );
+  });
+};
+
+export const getTripsInRange = async (startDate: string, endDate: string): Promise<any[]> => {
+  const db = await getDatabase();
+  if (!db) return [];
+
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          `SELECT * FROM trips WHERE tripDateCreated BETWEEN ? AND ?;`,
+          [startDate, endDate],
+          (_, results) => {
+            let trips = [];
+            for (let i = 0; i < results.rows.length; i++) {
+              trips.push(results.rows.item(i));
+            }
+            resolve(trips);
+          }
+        );
+      },
+      (error) => {
+        console.error("❌ Get trips error:", error);
+        reject([]);
+      }
+    );
+  });
+};

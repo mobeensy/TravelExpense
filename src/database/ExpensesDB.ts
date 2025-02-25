@@ -72,3 +72,30 @@ export const deleteExpense = async (expenseId: number) => {
     console.error("❌ Delete expense error:", error);
   }
 };
+
+export const getExpensesInRange = async (startDate: string, endDate: string): Promise<any[]> => {
+  const db = await getDatabase();
+  if (!db) return [];
+
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          `SELECT * FROM expenses WHERE expenseDate BETWEEN ? AND ?;`,
+          [startDate, endDate],
+          (_, results) => {
+            let expenses = [];
+            for (let i = 0; i < results.rows.length; i++) {
+              expenses.push(results.rows.item(i));
+            }
+            resolve(expenses);
+          }
+        );
+      },
+      (error) => {
+        console.error("❌ Get expenses error:", error);
+        reject([]);
+      }
+    );
+  });
+};
