@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
-import { insertTrip, getTrips } from "../database/TripsDB";  // <-- import your DB methods
+import { insertTrip, getTrips } from "../database/TripsDB"; // <-- import your DB methods
 
 type RootStackParamList = {
   TripPlanner: undefined;
@@ -39,7 +47,6 @@ const TripPlanner = () => {
       console.error("❌ Error loading trips:", error);
     }
   };
-  
 
   const handleAddTrip = async () => {
     if (newTripText.trim() === "") return;
@@ -89,17 +96,16 @@ const TripPlanner = () => {
 
       {/* Display list of existing trips */}
       <FlatList
-  data={trips}
-  keyExtractor={(item) => (item.tripId ? item.tripId.toString() : Math.random().toString())}
-  renderItem={({ item }) => (
-    <TouchableOpacity style={styles.tripItem} onPress={() => handleTripPress(item)}>
-      <Text style={styles.tripText}>
-        {item.tripName} (Created: {new Date(item.tripDateCreated).toLocaleDateString()})
-      </Text>
-    </TouchableOpacity>
-  )}
-/>
-
+        data={trips}
+        keyExtractor={(item) => (item.tripId ? item.tripId.toString() : Math.random().toString())}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.tripItem} onPress={() => handleTripPress(item)}>
+            <Text style={styles.tripText}>
+              {item.tripName} (Created: {new Date(item.tripDateCreated).toLocaleDateString()})
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
     </View>
   );
 };
