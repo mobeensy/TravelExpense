@@ -1,200 +1,18 @@
-// import React, { useEffect, useState } from "react";
-// import { View, Text, TextInput, Button, FlatList, StyleSheet } from "react-native";
-// import { RouteProp, useRoute } from "@react-navigation/native";
-// import { insertExpense, getExpensesByTrip } from "../database/ExpensesDB";
-
-// // Our DB schema uses these fields for expenses:
-// interface ExpenseItem {
-//   expenseId?: number;     // Primary key in the DB
-//   expenseCategory: string;  // We'll treat "name" as the category for simplicity
-//   expenseLocation: string;
-//   expenseAmount: string;    // We'll store as string, parse to number
-//   expenseDate: string;
-//   expenseDetails: string;   // optional
-// }
-
-// type RootStackParamList = {
-//   TripDetails: { 
-//     tripId: number; 
-//     tripName: string; 
-//   };
-// };
-
-// type TripDetailsRouteProp = RouteProp<RootStackParamList, "TripDetails">;
-
-// const TripDetails = () => {
-//   const route = useRoute<TripDetailsRouteProp>();
-//   const { tripId, tripName } = route.params;
-
-//   // Form data for an expense
-//   const [formData, setFormData] = useState<ExpenseItem>({
-//     expenseCategory: "",
-//     expenseLocation: "",
-//     expenseAmount: "",
-//     expenseDate: "",
-//     expenseDetails: "",
-//   });
-
-//   // List of expenses from the DB
-//   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
-
-//   // Load existing expenses when screen mounts
-//   useEffect(() => {
-//     loadExpenses();
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, []);
-
-//   const loadExpenses = async () => {
-//     const dbResults = await getExpensesByTrip(tripId);
-//     // dbResults is a raw array of rows
-//     // We'll map them to our ExpenseItem interface
-//     console.log(dbResults);
-//     const expenseList: ExpenseItem[] = dbResults.map((row: any) => ({
-//       expenseId: row.expenseId,
-//       expenseCategory: row.expenseCategory,
-//       expenseLocation: row.expenseLocation,
-//       expenseAmount: String(row.expenseAmount),
-//       expenseDate: row.expenseDate,
-//       expenseDetails: row.expenseDetails,
-//     }));
-//     setExpenses(expenseList);
-//   };
-
-//   // Update form values
-//   const handleChangeText = (key: keyof ExpenseItem, value: string) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       [key]: value,
-//     }));
-//   };
-
-//   const handleSubmit = async () => {
-//     // Basic validation
-//     if (
-//       formData.expenseCategory &&
-//       formData.expenseLocation &&
-//       formData.expenseAmount &&
-//       formData.expenseDate
-//     ) {
-//       // Insert into SQLite
-//       await insertExpense(
-//         tripId,
-//         formData.expenseCategory,
-//         formData.expenseLocation,
-//         parseFloat(formData.expenseAmount), 
-//         formData.expenseDate,
-//         formData.expenseDetails
-//       );
-
-//       // Reload from DB
-//       await loadExpenses();
-
-//       // Reset the form
-//       setFormData({
-//         expenseCategory: "",
-//         expenseLocation: "",
-//         expenseAmount: "",
-//         expenseDate: "",
-//         expenseDetails: "",
-//       });
-//     }
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Trip: {tripName}</Text>
-
-//       {/* Input Fields */}
-//       <TextInput
-//         style={styles.input}
-//         placeholder="Expense Category"
-//         value={formData.expenseCategory}
-//         onChangeText={(text) => handleChangeText("expenseCategory", text)}
-//       />
-//       <TextInput
-//         style={styles.input}
-//         placeholder="Location"
-//         value={formData.expenseLocation}
-//         onChangeText={(text) => handleChangeText("expenseLocation", text)}
-//       />
-//       <TextInput
-//         style={styles.input}
-//         placeholder="Amount"
-//         keyboardType="numeric"
-//         value={formData.expenseAmount}
-//         onChangeText={(text) => handleChangeText("expenseAmount", text)}
-//       />
-//       <TextInput
-//         style={styles.input}
-//         placeholder="Date (YYYY-MM-DD)"
-//         value={formData.expenseDate}
-//         onChangeText={(text) => handleChangeText("expenseDate", text)}
-//       />
-//       <TextInput
-//         style={styles.input}
-//         placeholder="Details (optional)"
-//         value={formData.expenseDetails}
-//         onChangeText={(text) => handleChangeText("expenseDetails", text)}
-//       />
-
-//       {/* Submit Button */}
-//       <Button title="Submit Expense" onPress={handleSubmit} />
-
-//       {/* List of Expenses */}
-//       <FlatList
-//         data={expenses}
-//         keyExtractor={(item) => item.expenseId?.toString() ?? Math.random().toString()}
-//         style={{ marginTop: 20 }}
-//         renderItem={({ item }) => (
-//           <View style={styles.itemContainer}>
-//             <Text style={styles.itemText}>
-//               {item.expenseCategory} | {item.expenseLocation} | {item.expenseAmount} | {item.expenseDate}
-//               {item.expenseDetails ? ` | ${item.expenseDetails}` : ""}
-//             </Text>
-//           </View>
-//         )}
-//       />
-//     </View>
-//   );
-// };
-
-// export default TripDetails;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#fff",
-//     padding: 16,
-//   },
-//   title: {
-//     fontSize: 22,
-//     fontWeight: "bold",
-//     marginBottom: 16,
-//     textAlign: "center",
-//   },
-//   input: {
-//     borderColor: "#ccc",
-//     borderWidth: 1,
-//     borderRadius: 5,
-//     padding: 10,
-//     marginBottom: 10,
-//   },
-//   itemContainer: {
-//     backgroundColor: "#f2f2f2",
-//     padding: 10,
-//     borderRadius: 5,
-//     marginBottom: 8,
-//   },
-//   itemText: {
-//     fontSize: 16,
-//   },
-// });
-
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import DatePicker from "react-native-date-picker";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { insertExpense, getExpensesByTrip } from "../database/ExpensesDB";
+import ExpenseItem from "../components/ExpensItem/ExpenseItem";
+import TextInputField from "../components/TextInputField/TextInputField";
 
 // Our DB schema uses these fields for expenses:
 interface ExpenseItem {
@@ -206,9 +24,9 @@ interface ExpenseItem {
 }
 
 type RootStackParamList = {
-  TripDetails: { 
-    tripId: number; 
-    tripName: string; 
+  TripDetails: {
+    tripId: number;
+    tripName: string;
   };
 };
 
@@ -287,7 +105,7 @@ const TripDetails = () => {
         formData.expenseLocation,
         parseFloat(formData.expenseAmount),
         formData.expenseDate,
-        ''
+        "",
       );
 
       await loadExpenses();
@@ -303,27 +121,22 @@ const TripDetails = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Trip: {tripName}</Text>
+      <Text style={styles.title}>{tripName}</Text>
 
       {/* Expense Category */}
-      <TextInput
-        style={styles.input}
+      <TextInputField
         placeholder="Expense Category"
         value={formData.expenseCategory}
         onChangeText={(text) => handleChangeText("expenseCategory", text)}
       />
 
-      {/* Location */}
-      <TextInput
-        style={styles.input}
+      <TextInputField
         placeholder="Location"
         value={formData.expenseLocation}
         onChangeText={(text) => handleChangeText("expenseLocation", text)}
       />
 
-      {/* Amount Field (Numeric Only) */}
-      <TextInput
-        style={styles.input}
+      <TextInputField
         placeholder="Amount"
         keyboardType="numeric"
         value={formData.expenseAmount}
@@ -358,11 +171,12 @@ const TripDetails = () => {
         keyExtractor={(item) => item.expenseId?.toString() ?? Math.random().toString()}
         style={{ marginTop: 20 }}
         renderItem={({ item }) => (
-          <View style={styles.itemContainer}>
-            <Text style={styles.itemText}>
-              {item.expenseCategory} | {item.expenseLocation} | ${item.expenseAmount} | {item.expenseDate}
-            </Text>
-          </View>
+          <ExpenseItem
+            category={item.expenseCategory}
+            location={item.expenseLocation}
+            amount={item.expenseAmount}
+            date={item.expenseDate}
+          />
         )}
       />
     </View>
