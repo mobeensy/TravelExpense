@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 const SplashScreen = ({ navigation }: { navigation: any }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace("TripPlanner");
+      navigation.replace("Main");
     }, 3000); // Navigate after 3 seconds
 
     return () => clearTimeout(timer); // Cleanup timer on unmount
