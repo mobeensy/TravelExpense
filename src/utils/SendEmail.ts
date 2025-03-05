@@ -9,8 +9,6 @@ export const sendCSVByEmail = async (filePath: string) => {
       url: "file://" + filePath, // ✅ Attach the CSV file
       type: "text/csv",
     });
-
-    console.log("✅ Email draft opened with attachment.");
   } catch (err) {
     console.error("❌ Error sending email:", err);
   }

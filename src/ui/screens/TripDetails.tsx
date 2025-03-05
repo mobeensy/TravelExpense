@@ -15,11 +15,13 @@ import ExpenseItem from "../components/ExpensItem/ExpenseItem";
 import TextInputField from "../components/TextInputField/TextInputField";
 import { Picker } from "@react-native-picker/picker";
 import CurrencyPicker from "../components/CurrencyPicker/CurrencyPicker";
+import { updateTripCurrency } from "../../database/TripsDB";
 
 type RootStackParamList = {
   TripDetails: {
     tripId: number;
     tripName: string;
+    tripCurrency: string | null;
   };
 };
 
@@ -27,15 +29,15 @@ type TripDetailsRouteProp = RouteProp<RootStackParamList, "TripDetails">;
 
 const TripDetails = () => {
   const route = useRoute<TripDetailsRouteProp>();
-  const { tripId, tripName } = route.params;
-
+  const { tripId, tripName, tripCurrency } = route.params;
+  const [lastCurrency, setLastCurrency] = useState<string>(tripCurrency ? tripCurrency : "USD");
   // Expense Form
   const [formData, setFormData] = useState<Expense>({
     expenseCategory: "",
     expenseLocation: "",
     expenseAmount: "",
     expenseDate: new Date().toISOString().split("T")[0],
-    expenseCurrency: "USD", // Default
+    expenseCurrency: lastCurrency, // Default
     expenseDetails: "",
   });
 
@@ -106,16 +108,19 @@ const TripDetails = () => {
         formData.expenseCurrency,
       );
 
+      await updateTripCurrency(tripId, formData.expenseCurrency);
+      setLastCurrency(formData.expenseCurrency);
+
       await loadExpenses();
 
-      setFormData({
+      setFormData((prev) => ({
         expenseCategory: "",
         expenseLocation: "",
         expenseAmount: "",
         expenseDate: new Date().toISOString().split("T")[0],
-        expenseCurrency: "USD",
+        expenseCurrency: prev.expenseCurrency, // Use `prev` to keep the previous value
         expenseDetails: "",
-      });
+      }));
     }
   };
 
