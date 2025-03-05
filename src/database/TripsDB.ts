@@ -14,7 +14,6 @@ export const insertTrip = async (tripName: string): Promise<number> => {
           [tripName, now, now],
           (_, resultSet) => {
             // resultSet.insertId is the new row’s ID
-            console.log("✅ Trip inserted with ID:", resultSet.insertId);
             resolve(resultSet.insertId);
           }
         );
@@ -73,7 +72,6 @@ export const updateTripName = async (tripId: number, newTripName: string) => {
         [newTripName, now, tripId]
       );
     });
-    console.log("✅ Trip updated");
   } catch (error) {
     console.error("❌ Update trip error:", error);
   }
@@ -88,7 +86,6 @@ export const deleteTrip = async (tripId: number) => {
     await db.transaction(async (tx) => {
       await tx.executeSql("DELETE FROM trips WHERE tripId = ?;", [tripId]);
     });
-    console.log("✅ Trip deleted");
   } catch (error) {
     console.error("❌ Delete trip error:", error);
   }
@@ -148,4 +145,23 @@ export const getTripsInRange = async (startDate: string, endDate: string): Promi
       }
     );
   });
+};
+
+export const updateTripCurrency = async (tripId: number, currencyUsed: string) => {
+  const db = await getDatabase();
+  if (!db) return;
+
+  try {
+    await db.transaction(async (tx) => {
+      await tx.executeSql(
+        `UPDATE trips 
+         SET tripLastUsedCurrency = ?, 
+             tripLastModified = datetime('now') 
+         WHERE tripId = ?;`,
+        [currencyUsed, tripId]
+      );
+    });
+  } catch (error) {
+    console.error("❌ Update trip error:", error);
+  }
 };

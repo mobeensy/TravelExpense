@@ -1,7 +1,7 @@
 import SQLite from "react-native-sqlite-storage";
 
 // Enable debugging
-SQLite.DEBUG(true);
+SQLite.DEBUG(false); // set to true for more logs
 SQLite.enablePromise(true);
 
 export const getDatabase = async () => {
@@ -12,7 +12,6 @@ export const getDatabase = async () => {
         location: "default",
       }
     );
-    console.log("✅ Database opened successfully");
     return db;
   } catch (error) {
     console.error("❌ Database open error:", error);
@@ -37,6 +36,7 @@ export const initDatabase = async () => {
             `CREATE TABLE IF NOT EXISTS trips (
               tripId INTEGER PRIMARY KEY AUTOINCREMENT,
               tripName TEXT NOT NULL,
+              tripLastUsedCurrency TEXT DEFAULT NULL,
               tripDateCreated TEXT NOT NULL,
               tripLastModified TEXT NOT NULL
             );`
@@ -62,7 +62,6 @@ export const initDatabase = async () => {
           reject(error);
         },
         () => {
-          console.log("✅ Tables created successfully");
           resolve();
         }
       );
@@ -97,7 +96,6 @@ export const deleteDatabase = async () => {
           reject(error);
         },
         () => {
-          console.log("✅ Tables deleted successfully");
           resolve();
         }
       );

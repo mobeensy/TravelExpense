@@ -15,7 +15,6 @@ export const generateCSV = async (expenses: any[], tripName: string) => {
 
     // ✅ Write the CSV file (UTF-8 BOM for Excel compatibility)
     await writeFile(filePath, "\uFEFF" + csv, "utf8");
-    console.log("✅ CSV file created:", filePath);
 
     return filePath;
   } catch (err) {

@@ -28,7 +28,6 @@ export const insertExpense = async (
         [tripId, category, location, amount, date, details, currency]
       );
     });
-    console.log("✅ Expense inserted");
   } catch (error) {
     console.error("❌ Insert expense error:", error);
   }
@@ -39,8 +38,6 @@ export const insertExpense = async (
 export const getExpensesByTrip = async (tripId: number): Promise<any[]> => {
   const db = await getDatabase();
   if (!db) return [];
-
-  console.log(`🛠️ Attempting to retrieve expenses for tripId: ${tripId}`);
 
   return new Promise((resolve, reject) => {
     db.transaction(
@@ -75,7 +72,6 @@ export const deleteExpense = async (expenseId: number) => {
     await db.transaction(async (tx) => {
       await tx.executeSql("DELETE FROM expenses WHERE expenseId = ?;", [expenseId]);
     });
-    console.log("✅ Expense deleted");
   } catch (error) {
     console.error("❌ Delete expense error:", error);
   }

@@ -98,7 +98,7 @@ To learn more about React Native, take a look at the following resources:
 
 TODO:
 
-Export
+Export (Done)
 Last currency used add it to trip info so that it is used as default for next expense in trip
 Editing expenses
 

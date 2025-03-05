@@ -1,21 +1,13 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
-import { insertTrip, getTrips } from "../../database/TripsDB"; // <-- import your DB methods
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { insertTrip, getTrips } from "../../database/TripsDB";
 
 type RootStackParamList = {
   TripPlanner: undefined;
-  TripDetails: { tripId: number; tripName: string };
+  TripDetails: { tripId: number; tripName: string; tripCurrency: string | null };
 };
 
 type TripPlannerNavProp = NativeStackNavigationProp<RootStackParamList, "TripPlanner">;
@@ -23,57 +15,56 @@ type TripPlannerNavProp = NativeStackNavigationProp<RootStackParamList, "TripPla
 interface TripRow {
   tripId: number;
   tripName: string;
+  tripLastUsedCurrency: string | null;
   tripDateCreated: string;
   tripLastModified: string;
 }
 
 const TripPlanner = () => {
   const navigation = useNavigation<TripPlannerNavProp>();
-
   const [newTripText, setNewTripText] = useState("");
   const [trips, setTrips] = useState<TripRow[]>([]);
 
-  // Load existing trips on mount
-  useEffect(() => {
-    loadTripsFromDB();
-  }, []);
-
+  // Function to load trips from DB
   const loadTripsFromDB = async () => {
     try {
       const allTrips = await getTrips();
-      console.log("✅ Loaded trips from DB:", allTrips); // Debugging log
       setTrips(allTrips as TripRow[]);
     } catch (error) {
       console.error("❌ Error loading trips:", error);
     }
   };
 
+  // ✅ Reload trips when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      loadTripsFromDB();
+    }, []),
+  );
+
   const handleAddTrip = async () => {
     if (newTripText.trim() === "") return;
 
     try {
-      // Insert the trip, get its new ID
       const insertedTripId = await insertTrip(newTripText.trim());
-      // Navigate to TripDetails
       navigation.navigate("TripDetails", {
         tripId: insertedTripId,
         tripName: newTripText.trim(),
+        tripCurrency: null,
       });
 
-      // Reset the input
       setNewTripText("");
-      // Optionally refresh the trip list (if you still want to show them here)
       await loadTripsFromDB();
     } catch (error) {
       console.error("❌ handleAddTrip error:", error);
     }
   };
 
-  // Navigate to an existing trip
   const handleTripPress = (trip: TripRow) => {
     navigation.navigate("TripDetails", {
       tripId: trip.tripId,
       tripName: trip.tripName,
+      tripCurrency: trip.tripLastUsedCurrency,
     });
   };
 
@@ -97,11 +88,11 @@ const TripPlanner = () => {
       {/* Display list of existing trips */}
       <FlatList
         data={trips}
-        keyExtractor={(item) => (item.tripId ? item.tripId.toString() : Math.random().toString())}
+        keyExtractor={(item) => item.tripId.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.tripItem} onPress={() => handleTripPress(item)}>
             <Text style={styles.tripText}>
-              {item.tripName} (Created: {new Date(item.tripDateCreated).toLocaleDateString()})
+              {item.tripName} (Last Used Currency: {item.tripLastUsedCurrency || "N/A"})
             </Text>
           </TouchableOpacity>
         )}
@@ -113,22 +104,9 @@ const TripPlanner = () => {
 export default TripPlanner;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    marginBottom: 16,
-    alignItems: "center",
-  },
+  container: { flex: 1, backgroundColor: "#FFFFFF", padding: 16 },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 16, textAlign: "center" },
+  searchContainer: { flexDirection: "row", marginBottom: 16, alignItems: "center" },
   searchInput: {
     flex: 1,
     borderWidth: 1,
@@ -148,13 +126,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 16,
   },
-  tripItem: {
-    padding: 12,
-    backgroundColor: "#f2f2f2",
-    borderRadius: 5,
-    marginBottom: 8,
-  },
-  tripText: {
-    fontSize: 16,
-  },
+  tripItem: { padding: 12, backgroundColor: "#f2f2f2", borderRadius: 5, marginBottom: 8 },
+  tripText: { fontSize: 16 },
 });
