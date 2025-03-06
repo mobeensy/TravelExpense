@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import DatePicker from "react-native-date-picker";
 import { getTripsInRange } from "../../database/TripsDB";
 import { getExpensesByTrip } from "../../database/ExpensesDB";
 import { generateCSV } from "../../utils/GenerateCSV";
 import { sendCSVByEmail } from "../../utils/SendEmail";
+import { getToday, getYearAgo } from "../../utils/DateHelpers";
 
 const ExportPage = () => {
-  const today = new Date().toISOString().split("T")[0];
+  const today = useMemo(() => getToday(), []);
+  const yearAgo = useMemo(() => getYearAgo(), []);
 
   const [startDate, setStartDate] = useState(today);
-  const [endDate, setEndDate] = useState(today);
+  const [endDate, setEndDate] = useState(yearAgo);
   const [isStartDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setEndDatePickerOpen] = useState(false);
   const [trips, setTrips] = useState<any[]>([]);
@@ -225,28 +227,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-// import React from "react";
-// import { View, Text, StyleSheet } from "react-native";
-
-// const ExportPage = () => {
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Export Trips</Text>
-//     </View>
-//   );
-// };
-
-// export default ExportPage;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: "center",
-//     alignItems: "center",
-//   },
-//   title: {
-//     fontSize: 24,
-//     fontWeight: "bold",
-//   },
-// });

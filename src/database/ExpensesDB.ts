@@ -103,3 +103,41 @@ export const getExpensesInRange = async (startDate: string, endDate: string): Pr
     );
   });
 };
+
+export const updateExpense = async (
+  id: number,
+  category: string,
+  location: string,
+  amount: number,
+  date: string,
+  details: string,
+  currency: string
+): Promise<void> => {
+  const db = await getDatabase();
+  if (!db) return;
+
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          `UPDATE expenses 
+           SET expenseCategory = ?, 
+               expenseLocation = ?, 
+               expenseAmount = ?, 
+               expenseDate = ?, 
+               expenseDetails = ?, 
+               expenseCurrency = ?
+           WHERE expenseId = ?`,
+          [category, location, amount, date, details, currency, id],
+          (_, results) => {
+            resolve();
+          }
+        );
+      },
+      (error) => {
+        console.error("❌ Update expense error:", error);
+        reject();
+      }
+    );
+  });
+};

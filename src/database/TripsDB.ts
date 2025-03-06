@@ -84,6 +84,7 @@ export const deleteTrip = async (tripId: number) => {
 
   try {
     await db.transaction(async (tx) => {
+      // await tx.executeSql("DELETE FROM expenses WHERE tripId = ?;", [tripId]);
       await tx.executeSql("DELETE FROM trips WHERE tripId = ?;", [tripId]);
     });
   } catch (error) {
