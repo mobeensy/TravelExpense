@@ -89,13 +89,19 @@ const TripPlanner = () => {
       <FlatList
         data={trips}
         keyExtractor={(item) => item.tripId.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.tripItem} onPress={() => handleTripPress(item)}>
-            <Text style={styles.tripText}>
-              {item.tripName} (Last Used Currency: {item.tripLastUsedCurrency || "N/A"})
-            </Text>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          // Format the date to show only year-month-day
+          const formattedDate = item.tripDateCreated
+            ? new Date(item.tripDateCreated).toISOString().split("T")[0]
+            : "N/A";
+
+          return (
+            <TouchableOpacity style={styles.tripItem} onPress={() => handleTripPress(item)}>
+              <Text style={styles.tripText}>{item.tripName}</Text>
+              <Text style={styles.tripText}>({formattedDate})</Text>
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
@@ -126,6 +132,13 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 16,
   },
-  tripItem: { padding: 12, backgroundColor: "#f2f2f2", borderRadius: 5, marginBottom: 8 },
+  tripItem: {
+    padding: 12,
+    backgroundColor: "#f2f2f2",
+    borderRadius: 5,
+    marginBottom: 8,
+    flexDirection: "row", // You need this to make justifyContent work
+    justifyContent: "space-between", // Correct property for spacing items
+  },
   tripText: { fontSize: 16 },
 });

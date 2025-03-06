@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 // Define the prop types
 interface ExpenseItemProps {
@@ -8,6 +8,8 @@ interface ExpenseItemProps {
   amount: string;
   currency: string;
   date: string;
+  details: string;
+  onEdit?: () => void;
 }
 
 const ExpenseItem: React.FC<ExpenseItemProps> = ({
@@ -16,6 +18,8 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({
   amount,
   currency,
   date,
+  details,
+  onEdit,
 }) => {
   return (
     <View style={styles.itemContainer}>
@@ -32,6 +36,11 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({
         <Text style={styles.locationText} numberOfLines={1} ellipsizeMode="tail">
           {location.length > 15 ? location.substring(0, 15) + "..." : location}
         </Text>
+        {onEdit && (
+          <TouchableOpacity style={styles.editButton} onPress={onEdit}>
+            <Text style={styles.editButtonText}>Edit</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -49,16 +58,16 @@ const styles = StyleSheet.create({
   },
   mainItemRow: {
     flexDirection: "row",
-    justifyContent: "space-between", // ✅ Distributes items evenly
-    alignItems: "center", // ✅ Aligns items vertically in the center
-    width: "100%", // ✅ Takes the full available width
+    justifyContent: "space-between", // Distributes items evenly
+    alignItems: "center", // Aligns items vertically in the center
+    width: "100%", // Takes the full available width
   },
   subRow: {
     flexDirection: "row",
-    justifyContent: "flex-start", // ✅ Distributes items evenly
+    justifyContent: "flex-start", // Distributes items evenly
     gap: 16,
-    alignItems: "center", // ✅ Aligns items vertically in the center
-    width: "100%", // ✅ Takes the full available width
+    alignItems: "center", // Aligns items vertically in the center
+    width: "100%", // Takes the full available width
   },
   itemText: {
     fontSize: 16,
@@ -66,13 +75,23 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 14,
-    flexBasis: "40%", // ✅ Takes at least 50% of available space
-    // minWidth: 100, // ✅ Ensures a minimum space for 18 characters (~5px per char)
+    flexBasis: "40%", // Takes at least 40% of available space
     overflow: "hidden",
   },
   locationText: {
     fontSize: 14,
-    flex: 1, // ✅ Fills remaining space
+    flex: 1, // Fills remaining space
     overflow: "hidden",
+  },
+  editButton: {
+    backgroundColor: "#007BFF",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  editButtonText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "500",
   },
 });
